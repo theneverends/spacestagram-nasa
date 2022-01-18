@@ -33,7 +33,7 @@ function App() {
   };
 
   //render at the beginning
-  useEffect(async() => {
+  useEffect(() => {
     setIsLoading(true);
     
     async function fetchData() {
@@ -62,10 +62,10 @@ function App() {
             </button>
           </div>
           <div className="prev" >
-            <a onClick={() => page > 0 ? flipPage(-1) : undefined }>&#10094;</a>
+            <button onClick={() => page > 0 ? flipPage(-1) : undefined }>&#10094;</button>
           </div>
           <div className="next">
-          <a onClick={() => page < array.list.length - 1 ? flipPage(1) : undefined}>&#10095;</a>
+          <button onClick={() => page < array.list.length - 1 ? flipPage(1) : undefined}>&#10095;</button>
           </div>
         </div>  
         <p>
