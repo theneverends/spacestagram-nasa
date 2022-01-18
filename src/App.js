@@ -1,50 +1,90 @@
-import React, { Component } from "react"
-import logo from "./logo.svg"
-import "./App.css"
+import "./App.css";
+import React, { useState } from "react";
+import { useEffect } from "react";
 
-class LambdaDemo extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { loading: false, msg: null }
-  }
+function App() {
+  const [value, setValue] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [like, setLike] = useState("like1");
+  const [page, setPage] = useState(0);
+  const [likeList, setLikeList] = useState([]);
 
-  handleClick = api => e => {
-    e.preventDefault()
+  //listener to like button
+  const likeListener = (item) => {
+    if (like === "like1") {
+      setLike("like2");
+      const temp = likeList;
+      temp.push(item);
+      setLikeList(temp);
+      localStorage.setItem(item.url, item);
+    } else {
+      setLike("like1");
+      const temp = likeList;
+      temp.pop(item);
+      setLikeList(temp);
+      localStorage.removeItem(item.url);
+    }
+  };
 
-    this.setState({ loading: true })
-    fetch("/.netlify/functions/" + api)
-      .then(response => response.json())
-      .then(json => this.setState({ loading: false, msg: json.msg }))
-  }
+  //
+  const flipPage = (x) => {
+      setPage(x + page);
+      setLike("like1");
+  };
 
-  render() {
-    const { loading, msg } = this.state
+  //render at the beginning
+  useEffect(async() => {
+    setIsLoading(true);
+    
+    async function fetchData() {
+      const response = await fetch("https://api.nasa.gov/planetary/apod?api_key=UzSgl1dG6wqfUUp3oSeinvDyZQDL0g58fyRRKQiN&count=10");
+      const json = await response.json();
+      let map = JSON.parse(JSON.stringify(json));
+      setValue(map);
+      setIsLoading(false);
+    }
+    fetchData();
+  }, []);
 
+  
+
+  //Map through the list
+  const List = (array) => {
     return (
-      <p>
-        <button onClick={this.handleClick("hello")}>{loading ? "Loading..." : "Call Lambda"}</button>
-        <button onClick={this.handleClick("async-dadjoke")}>{loading ? "Loading..." : "Call Async Lambda"}</button>
-        <br />
-        <span>{msg}</span>
-      </p>
-    )
-  }
-}
-
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <LambdaDemo />
-        </header>
+      <div className="container">
+        <h4>{array.list[page].title}</h4>
+        <h6>on {array.list[page].date}</h6>
+        <div className="imgContainer">
+          <img align="left" src={array.list[page].hdurl} alt="Loading... Please wait"/>
+          <div className="top-right">
+            <button className={like} onClick={() => likeListener(array.list[page])}>
+              <i className="fas fa-heart"></i>
+            </button>
+          </div>
+          <div className="prev" >
+            <a onClick={() => page > 0 ? flipPage(-1) : undefined }>&#10094;</a>
+          </div>
+          <div className="next">
+          <a onClick={() => page < array.list.length - 1 ? flipPage(1) : undefined}>&#10095;</a>
+          </div>
+        </div>  
+        <p>
+          {array.list[page].explanation}
+        </p>
       </div>
-    )
-  }
+    );
+  };
+
+  return (
+    <div className="all">
+      <div className="nav">
+        <a href="./">Spacestagram</a>
+        <a href="#collection">My Collection</a>
+      </div>
+      <h3>Spacestagram</h3>
+      { isLoading ? <p>Loading ...</p> : <List list={value} />}
+    </div>
+  );
 }
 
-export default App
+export default App;
